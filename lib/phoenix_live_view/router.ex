@@ -350,7 +350,8 @@ defmodule Phoenix.LiveView.Router do
      alias: false,
      as: as_helper,
      private: Map.put(private, :phoenix_live_view, {live_view, opts, live_session}),
-     metadata: Map.put(metadata, :phoenix_live_view, {live_view, action, opts, live_session})}
+     metadata: Map.put(metadata, :phoenix_live_view, {live_view, action, opts, live_session}),
+     module: live_view}
   end
 
   defp validate_live_opts!(opts) do
