@@ -330,13 +330,13 @@ defmodule Phoenix.LiveView.Router do
     __live__(router, live_view, nil, Keyword.merge(action, opts))
   end
 
-  def __live__(router, live_view, action, opts)
+  def __live__(router, unscoped_live_view, action, opts)
       when is_atom(action) and is_list(opts) do
     live_session =
       Module.get_attribute(router, :phoenix_live_session_current) ||
         %{name: :default, extra: %{session: %{}}, vsn: session_vsn(router)}
 
-    live_view = Phoenix.Router.scoped_alias(router, live_view)
+    live_view = Phoenix.Router.scoped_alias(router, unscoped_live_view)
     {private, metadata, opts} = validate_live_opts!(opts)
 
     opts =
@@ -346,12 +346,16 @@ defmodule Phoenix.LiveView.Router do
 
     {as_helper, as_action} = inferred_as(live_view, opts[:as], action)
 
+    metadata =
+      metadata
+      |> Map.put(:phoenix_live_view, {live_view, action, opts, live_session})
+      |> Map.put(:log_module, Keyword.get(opts, :log_module, unscoped_live_view))
+
     {as_action,
      alias: false,
      as: as_helper,
      private: Map.put(private, :phoenix_live_view, {live_view, opts, live_session}),
-     metadata: Map.put(metadata, :phoenix_live_view, {live_view, action, opts, live_session}),
-     module: live_view}
+     metadata: metadata}
   end
 
   defp validate_live_opts!(opts) do
