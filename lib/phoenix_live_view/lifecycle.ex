@@ -10,10 +10,11 @@ defmodule Phoenix.LiveView.Lifecycle do
           handle_event: [hook],
           handle_info: [hook],
           handle_params: [hook],
-          mount: [hook]
+          mount: [hook],
+          fallback_handler: module()
         }
 
-  defstruct handle_event: [], handle_info: [], handle_params: [], mount: []
+  defstruct handle_event: [], handle_info: [], handle_params: [], mount: [], fallback_handler: nil
 
   @doc """
   Returns a map of infos about the lifecycle stage for the given `view`.

@@ -486,6 +486,7 @@ defmodule Phoenix.LiveView do
       @before_compile Phoenix.LiveView.Renderer
 
       @phoenix_live_opts opts
+      Module.register_attribute(__MODULE__, :phoenix_live_fallback_handler, accumulate: false)
       Module.register_attribute(__MODULE__, :phoenix_live_mount, accumulate: true)
       @before_compile Phoenix.LiveView
     end
@@ -510,6 +511,9 @@ defmodule Phoenix.LiveView do
 
     phoenix_live_mount = Module.get_attribute(env.module, :phoenix_live_mount)
     lifecycle = Phoenix.LiveView.Lifecycle.mount(env.module, phoenix_live_mount)
+
+    fallback_handler = Module.get_attribute(env.module, :phoenix_live_fallback_handler)
+    lifecycle = %{lifecycle | fallback_handler: fallback_handler}
 
     namespace =
       opts[:namespace] || env.module |> Module.split() |> Enum.take(1) |> Module.concat()
@@ -631,6 +635,12 @@ defmodule Phoenix.LiveView do
         :phoenix_live_mount,
         Phoenix.LiveView.Lifecycle.on_mount(__MODULE__, unquote(mod_or_mod_arg))
       )
+    end
+  end
+
+  defmacro fallback_handler(module) do
+    quote do
+      Module.put_attribute(__MODULE__, :phoenix_live_fallback_handler, unquote(module))
     end
   end
 

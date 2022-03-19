@@ -387,7 +387,21 @@ defmodule Phoenix.LiveView.Channel do
                 {{:reply, reply, socket}, %{socket: socket, event: event, params: val}}
 
               other ->
-                raise_bad_callback_response!(other, socket.view, :handle_event, 3)
+                if fallback_handler = socket.private.lifecycle.fallback_handler do
+                  case fallback_handler.call(socket, other) do
+                    {:noreply, %Socket{} = socket} ->
+                      {{:noreply, socket}, %{socket: socket, event: event, params: val}}
+
+                    {:reply, reply, %Socket{} = socket} ->
+                      {{:reply, reply, socket}, %{socket: socket, event: event, params: val}}
+
+                    _ ->
+                      raise_bad_callback_response!(other, socket.view, :handle_event, 3)
+                  end
+                else
+                  raise_bad_callback_response!(other, socket.view, :handle_event, 3)
+                end
+
             end
         end
       end
